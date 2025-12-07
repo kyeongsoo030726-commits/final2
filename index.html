@@ -1,0 +1,1851 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Do You Want to Build a Snowman?</title>
+    <style>
+        @font-face {
+            font-family: 'Aggravo';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2108@1.1/SBAggroL.woff') format('woff');
+            font-weight: 300;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'Aggravo';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2108@1.1/SBAggroM.woff') format('woff');
+            font-weight: 500;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'Aggravo';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2108@1.1/SBAggroB.woff') format('woff');
+            font-weight: 700;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'OngleipNuka';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2405-2@1.0/Ownglyph_noocar-Rg.woff2') format('woff2');
+            font-weight: normal;
+            font-display: swap;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "OngleipNuka", sans-serif;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            background: url('배경.png') 420px 0 / calc(100% - 420px) 100% no-repeat;
+            position: relative;
+            cursor: pointer;
+        }
+
+        body.start-screen {
+            background: url('시작화면.png') center/cover no-repeat;
+        }
+
+        * {
+            cursor: inherit;
+        }
+
+        button, .stored-snowball, .draggable-snowball, .decoration-item {
+            cursor: pointer !important;
+        }
+
+        /* 눈 내리는 효과 */
+        @keyframes snowfall {
+            0% {
+                transform: translateY(0) translateX(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) translateX(50px);
+                opacity: 0.3;
+            }
+        }
+
+        .snowflake {
+            position: fixed;
+            top: -20px;
+            background: white;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            animation: snowfall linear infinite;
+        }
+
+        .cursor-glove {
+            cursor: url('장갑1.png'), auto;
+        }
+
+        .cursor-glove-click {
+            cursor: url('장갑2.png'), auto;
+        }
+
+        .screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* 시작 화면 */
+        #startScreen {
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: flex-start;
+            padding-bottom: 18vh;
+            padding-left: 50%;
+        }
+
+        .start-choice {
+            font-family: "OngleipNuka", sans-serif;
+            font-size: 2rem;
+            color: #333;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 1rem 0;
+            margin: 0.5rem 0;
+            transition: transform 0.2s, color 0.2s;
+            text-align: left;
+            text-shadow: 3px 3px 8px rgba(255,255,255,0.9), 
+                         -1px -1px 4px rgba(255,255,255,0.7),
+                         1px 1px 6px rgba(255,255,255,0.8);
+        }
+
+        .start-choice:hover {
+            transform: translateX(10px);
+            color: #4a90e2;
+        }
+
+        /* 왼쪽 메뉴 */
+        .left-menu {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 420px;
+            height: 100%;
+            background: rgb(255, 255, 255);
+            box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        .menu-title {
+            font-family: 'Aggravo', sans-serif;
+            font-weight: 700;
+            font-size: 1.6rem;
+            color: #6b8ba4;
+            margin-bottom: 2rem;
+            line-height: 1.4;
+            text-align: center;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .menu-title .small {
+            font-size: 1.2rem;
+            color: #a8bfd4;
+        }
+
+        .snowball-storage {
+            margin-bottom: 1rem;
+            margin-top: 1rem;
+        }
+
+        .storage-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .stored-snowballs {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .stored-snowball {
+            cursor: pointer;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 10px;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            user-select: none;
+            transition: transform 0.2s;
+        }
+
+        .stored-snowball:hover {
+            transform: scale(1.05);
+            border-color: #4a90e2;
+        }
+
+        .snowball-label {
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: bold;
+        }
+
+        .stored-snowball img {
+            max-width: 100%;
+            display: block;
+            pointer-events: none;
+        }
+
+        .menu-buttons {
+            margin-top: auto;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .gallery-btn {
+            font-family: "OngleipNuka", sans-serif;
+            font-size: 1.3rem;
+            padding: 1rem;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+        }
+
+        .gallery-btn:hover {
+            background: #555;
+            transform: scale(1.02);
+        }
+
+        .home-btn {
+            font-size: 1.8rem;
+            padding: 1rem 1.5rem;
+            background: #ddd;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .home-btn:hover {
+            background: #ccc;
+        }
+
+        /* 게임 영역 */
+        .game-area {
+            margin-left: 420px;
+            width: calc(100% - 420px);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* 상단 가이드 */
+        .guide-section {
+            position: absolute;
+            top: 8rem;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 10;
+        }
+
+        .task-text {
+            font-family: 'OngleipNuka', sans-serif;
+            font-size: 3.5rem;
+            color: #333;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(255,255,255,0.8);
+        }
+
+        .guide-text {
+            font-size: 2rem;
+            color: #666;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+        }
+
+        /* 질문 화면 */
+        .question-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            padding: 3rem;
+            border-radius: 30px;
+            margin-top: -5rem;
+        }
+
+        .question {
+            font-family: 'OngleipNuka', sans-serif;
+            font-size: 2.5rem;
+            color: #000;
+            text-shadow: 2px 2px 4px rgba(255,255,255,0.9);
+        }
+
+        .tier-buttons {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .tier-btn {
+            width: 200px;
+            height: 200px;
+            font-family: "OngleipNuka", sans-serif;
+            font-size: 1.5rem;
+            background: #fff;
+            border: 1px solid #999;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            box-shadow: 3px 3px 10px rgba(0,0,0,0.15);
+        }
+
+        .tier-btn:hover {
+            transform: scale(1.05);
+            border-color: #4a90e2;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.2);
+        }
+
+        /* 눈덩이 굴리기 */
+        .snowball-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding-top: 5rem;
+        }
+
+        .snowball {
+            transition: transform 0.05s;
+            filter: drop-shadow(3px 3px 8px rgba(0,0,0,0.3));
+            margin-bottom: 5rem;
+        }
+
+        .next-btn {
+            position: absolute;
+            bottom: 12rem;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 1.2rem 3rem;
+            font-family: "OngleipNuka", sans-serif;
+            font-size: 1.5rem;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 10;
+        }
+
+        .next-btn:hover {
+            transform: translateX(-50%) scale(1.05);
+        }
+
+        /* 작업 영역 표시 */
+        .work-area-border {
+            position: absolute;
+            left: 50%;
+            top: 55%;
+            transform: translate(-50%, -50%);
+            width: 500px;
+            height: 550px;
+            background: transparent;
+            box-shadow: 0 0 40px rgba(0,0,0,0.15);
+            border-radius: 20px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* 눈사람 합치기 */
+        .assembly-area {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .guideline {
+            position: absolute;
+            pointer-events: none;
+            animation: blink 0.5s ease-in-out 10;
+            z-index: 5;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .draggable-snowball {
+            position: absolute;
+            filter: drop-shadow(3px 3px 8px rgba(0,0,0,0.3));
+            transition: none;
+            z-index: 10;
+            pointer-events: auto;
+        }
+
+        .draggable-snowball.dragging {
+            z-index: 1000;
+        }
+
+        /* 꾸미기 */
+        .decorate-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            position: relative;
+        }
+
+        .snowman-preview {
+            flex: 1;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .category-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.7rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .category-btn {
+            padding: 0.8rem;
+            font-size: 1.1rem;
+            background: #ddd;
+            border: none;
+            border-radius: 8px;
+            font-family: "OngleipNuka", sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .category-btn:hover {
+            background: #ccc;
+        }
+
+        .category-btn.active {
+            background: #4a90e2;
+            color: white;
+        }
+
+        .items-container {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .items-scroll {
+            display: flex;
+            gap: 1rem;
+            overflow: hidden;
+            flex: 1;
+        }
+
+        .item-img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            cursor: pointer;
+            border: 2px solid transparent;
+            border-radius: 5px;
+        }
+
+        .item-img:hover {
+            border-color: #4a90e2;
+        }
+
+        .scroll-btn {
+            padding: 0.5rem 0.8rem;
+            font-size: 1rem;
+            border: none;
+            background: #333;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: "OngleipNuka", sans-serif;
+            min-width: 35px;
+        }
+
+        .decoration-item {
+            position: absolute;
+            z-index: 100;
+        }
+
+        .decoration-item.selected .item-controls {
+            display: flex;
+        }
+
+        .item-controls {
+            position: absolute;
+            top: -30px;
+            right: -30px;
+            display: none;
+            gap: 5px;
+        }
+
+        .control-btn {
+            width: 25px;
+            height: 25px;
+            padding: 0;
+            font-size: 0.9rem;
+            border-radius: 50%;
+            border: 1px solid #999;
+            background: white;
+            cursor: pointer;
+            font-family: "SseulroneNetHandwrittenFont", sans-serif;
+        }
+
+        /* 저장 화면 */
+        .save-container {
+            display: flex;
+            gap: 4rem;
+            align-items: flex-start;
+            background: white;
+            border-radius: 0 0 15px 15px;
+            padding: 3rem 4rem;
+            min-width: 1000px;
+            margin-left: 100px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .save-header {
+            background: #333;
+            color: white;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 15px 15px 0 0;
+            margin-left: 100px;
+            min-width: 1000px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+
+        .save-header-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .close-save {
+            width: 35px;
+            height: 35px;
+            font-size: 2rem;
+            border: none;
+            background: transparent;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .close-save:hover {
+            color: #ddd;
+        }
+
+        .captured-image {
+            max-width: 450px;
+            max-height: 600px;
+            border: 3px solid #333;
+            border-radius: 10px;
+        }
+
+        .input-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            flex: 1;
+        }
+
+        .form-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .input-label {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 0.3rem;
+        }
+
+        input, textarea {
+            font-family: "OngleipNuka", sans-serif;
+            font-size: 1.2rem;
+            padding: 1rem;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            width: 100%;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #6b8ba4;
+        }
+
+        textarea {
+            resize: none;
+            height: 150px;
+        }
+
+        .save-btn {
+            font-family: "OngleipNuka", sans-serif;
+            font-size: 1.5rem;
+            padding: 1rem 3rem;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            width: fit-content;
+            align-self: flex-end;
+        }
+
+        /* DB 화면 */
+        .gallery-overlay {
+            position: absolute;
+            left: 420px;
+            top: 0;
+            width: calc(100% - 420px);
+            height: 100%;
+            background: rgba(0,0,0,0); /* 검은 반투명 배경 제거 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+        }
+
+        .gallery-container {
+            width: 80%;
+            height: 80%;
+            background: white;
+            border-radius: 10px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .gallery-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #333;
+            padding: 1rem 1.5rem;
+            color: white;
+        }
+
+        .gallery-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .close-gallery {
+            width: 35px;
+            height: 35px;
+            font-size: 2rem;
+            border: none;
+            background: transparent;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .close-gallery:hover {
+            color: #ddd;
+        }
+
+        .gallery {
+            flex: 1;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+            align-content: start;
+            padding: 2rem;
+        }
+
+        .gallery-item {
+            cursor: pointer;
+            border: 3px solid #333;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .gallery-item:hover {
+            transform: scale(1.05);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 600px;
+            position: relative;
+            overflow: hidden;
+            padding: 0; /* 패딩 제거 */
+        }
+
+        .modal-header {
+            background: #333;
+            color: white;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+
+        .close-modal {
+            width: 35px;
+            height: 35px;
+            font-size: 1.5rem;
+            border: none;
+            background: transparent;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .close-modal:hover {
+            color: #ddd;
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .modal-image {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-info h3 {
+            font-size: 1.8rem;
+            margin-bottom: 0.8rem;
+            color: #333;
+        }
+
+        .modal-info p {
+            font-size: 1.2rem;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .loading {
+            text-align: center;
+            font-size: 1.5rem;
+            color: #333;
+            white-space: nowrap;
+        }
+
+        .center-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+        }
+
+        .completed-popup {
+            background: white;
+            border-radius: 0 0 15px 15px;
+            padding: 4rem 5rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            text-align: center;
+            min-width: 500px;
+            margin-left: 100px;
+        }
+
+        .completed-popup .question {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .completed-popup .save-btn {
+            font-size: 1.3rem;
+            padding: 1rem 2.5rem;
+        }
+
+        .completed-header {
+            background: #333;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 15px 15px 0 0;
+            font-size: 1.3rem;
+            font-weight: bold;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            min-width: 500px;
+            margin-left: 100px;
+        }
+    </style>
+</head>
+<body class="start-screen">
+    <audio id="bgm" loop>
+        <source src="배경음악.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="clickSound">
+        <source src="click.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="rollSound" loop>
+        <source src="휙.wav" type="audio/wav">
+    </audio>
+
+    <!-- 시작 화면 -->
+    <div class="screen active" id="startScreen">
+        <button class="start-choice" onclick="playClick(); setTimeout(startGame, 100);">〉 Yes!</button>
+        <button class="start-choice" onclick="playClick(); setTimeout(showGalleryOverlay, 100);">〉 No! (눈사람 구경하기)</button>
+    </div>
+
+    <!-- 왼쪽 메뉴 -->
+    <div class="left-menu" id="leftMenu" style="display: none;">
+        <div class="menu-title">
+            Do You Want<br>
+            <span class="small">to Build</span><br>
+            a Snowman?
+        </div>
+        
+        <div class="snowball-storage" id="snowballStorage" style="display: none;">
+            <div class="storage-title">만든 눈덩이</div>
+            <div class="stored-snowballs" id="storedSnowballs"></div>
+        </div>
+
+        <div id="decorateMenu" style="display: none;">
+            <div class="category-buttons">
+                <button class="category-btn" onclick="selectCategory('나뭇가지', 10)">나뭇가지</button>
+                <button class="category-btn" onclick="selectCategory('눈', 8)">눈</button>
+                <button class="category-btn" onclick="selectCategory('눈썹', 7)">눈썹/볼터치</button>
+                <button class="category-btn" onclick="selectCategory('모자', 8)">모자</button>
+                <button class="category-btn" onclick="selectCategory('목도리', 6)">목도리</button>
+                <button class="category-btn" onclick="selectCategory('악세사리', 14)">악세사리</button>
+                <button class="category-btn" onclick="selectCategory('입', 8)">입</button>
+                <button class="category-btn" onclick="selectCategory('코', 6)">코</button>
+            </div>
+            <div class="items-container">
+                <button class="scroll-btn" onclick="scrollItems(-1)">〈</button>
+                <div class="items-scroll" id="itemsScroll"></div>
+                <button class="scroll-btn" onclick="scrollItems(1)">〉</button>
+            </div>
+        </div>
+
+        <div class="menu-buttons">
+            <button class="gallery-btn" onclick="showGalleryOverlay()">눈사람 보관함</button>
+            <button class="home-btn" onclick="location.reload()">⌂</button>
+        </div>
+    </div>
+
+    <!-- 1. 눈사람 단 고르기 -->
+    <div class="screen" id="selectTierScreen">
+        <div class="game-area">
+            <div class="question-content">
+                <p class="question">눈사람은 몇 단으로 만들까?</p>
+                <div class="tier-buttons">
+                    <button class="tier-btn" onclick="selectTier(2)">나는 2단으로<br>만들래!</button>
+                    <button class="tier-btn" onclick="selectTier(3)">나는 3단으로<br>만들래!</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. 눈덩이 굴리기 -->
+    <div class="screen" id="rollScreen">
+        <div class="game-area">
+            <div class="guide-section">
+                <div class="task-text" id="rollTaskText">몸통을 만들어보자!</div>
+                <div class="guide-text">눈덩이를 마우스로 문질러봐!</div>
+            </div>
+            <div class="snowball-container">
+                <img id="currentSnowball" class="snowball" src="" alt="snowball">
+                <button class="next-btn" onclick="nextSnowball()">다음</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 눈사람 합치기 -->
+    <div class="screen" id="assemblyScreen">
+        <div class="game-area">
+            <div class="guide-section">
+                <div class="task-text">눈사람을 합쳐보자!</div>
+                <div class="guide-text">드래그앤 드롭으로 화면 중앙에 눈사람을 쌓아봐!</div>
+            </div>
+            <div class="assembly-area" id="assemblyArea">
+                <div class="work-area-border"></div>
+                <svg class="guideline" id="guideline" width="400" height="600"></svg>
+            </div>
+            <button class="next-btn" onclick="goToDecorate()">다음</button>
+        </div>
+    </div>
+
+    <!-- 4. 눈사람 꾸미기 -->
+    <div class="screen" id="decorateScreen">
+        <div class="game-area">
+            <div class="guide-section">
+                <div class="task-text">나만의 눈사람을 꾸며보자!</div>
+                <div class="guide-text">왼쪽 메뉴에서 장식을 선택해봐!</div>
+            </div>
+            <div class="work-area-border"></div>
+            <div class="snowman-preview" id="snowmanPreview"></div>
+            <button class="next-btn" onclick="finishDecorate()">완성</button>
+        </div>
+    </div>
+
+    <!-- 5. 이름과 메시지 입력 -->
+    <div class="screen" id="saveScreen">
+        <div class="center-content">
+            <div>
+                <div class="save-header">
+                    <div class="save-header-title">눈사람 정보 입력</div>
+                    <button class="close-save" onclick="closeAndReturnToDecorate()">✕</button>
+                </div>
+                <div class="save-container">
+                    <img id="capturedImage" class="captured-image" src="" alt="완성된 눈사람">
+                    <div class="input-form">
+                        <div>
+                            <div class="input-label">이름</div>
+                            <input type="text" id="snowmanName" placeholder="눈사람의 이름을 지어줘!">
+                        </div>
+                        <div>
+                            <div class="input-label">메시지</div>
+                            <textarea id="snowmanMessage" placeholder="오늘의 기분이나 한 해를 마무리하는 소감을 적어봐!"></textarea>
+                        </div>
+                        <button class="save-btn" onclick="saveSnowman()">저장</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 저장 완료 화면 -->
+    <div class="screen" id="completedScreen">
+        <div class="center-content">
+            <div>
+                <div class="completed-header">알림</div>
+                <div class="completed-popup">
+                    <p class="question">눈사람이 저장되었어요! ⛄</p>
+                    <div style="display: flex; gap: 2rem; margin-top: 2rem; justify-content: center;">
+                        <button class="save-btn" onclick="showGalleryOverlay()">눈사람 보관함</button>
+                        <button class="save-btn" onclick="location.reload()">새로 만들기</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 갤러리 오버레이 -->
+    <div class="gallery-overlay" id="galleryOverlay" style="display: none;">
+        <div class="gallery-container">
+            <div class="gallery-header">
+                <div class="gallery-title">눈사람 보관함</div>
+                <button class="close-gallery" onclick="closeGalleryOverlay()">✕</button>
+            </div>
+            <div class="gallery" id="gallery">
+                <div class="loading">눈사람들을 불러오는 중...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 모달 -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-header-title">눈사람 상세보기</div>
+                <button class="close-modal" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <img id="modalImage" class="modal-image" src="" alt="눈사람">
+                <div class="modal-info">
+                    <h3 id="modalName"></h3>
+                    <p id="modalMessage"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwxOeA4K-SgKn4BZEwjFYTXMLjUTCXbjFx3yUlLH7bEwP6lKfqq6agbFsUsl3_EtXvA/exec';
+        
+        let gameState = {
+            tier: 0,
+            snowballs: [],
+            currentSnowballIndex: 0,
+            currentSize: 50,
+            assembledPositions: [],
+            capturedImageData: ''
+        };
+
+        let currentCategory = '';
+        let currentCategoryCount = 0;
+        let currentItemPage = 0;
+        let decorationCounter = 0;
+
+        // 오디오 함수들 먼저 정의
+        function playClick() {
+            try {
+                const sound = document.getElementById('clickSound');
+                if (sound) {
+                    const audio = new Audio(sound.src);
+                    audio.volume = 0.3;
+                    audio.play().catch(e => console.log('Sound play failed:', e));
+                }
+            } catch (e) {
+                console.log('Sound error:', e);
+            }
+        }
+
+        function playRollSound() {
+            document.getElementById('rollSound').play();
+        }
+
+        function stopRollSound() {
+            document.getElementById('rollSound').pause();
+            document.getElementById('rollSound').currentTime = 0;
+        }
+
+        // 눈 내리기 시작
+        function startSnowfall() {
+            setInterval(() => {
+                const snow = document.createElement('div');
+                snow.className = 'snowflake';
+                // 왼쪽 메뉴 영역(420px)을 제외한 위치에만 눈송이 생성
+                snow.style.left = (Math.random() * (100 - 27.5) + 27.5) + '%'; // 420px/1520px ≈ 27.5%
+                snow.style.width = (Math.random() * 7 + 5) + 'px'; // 5-12px로 증가
+                snow.style.height = snow.style.width;
+                snow.style.animationDuration = (Math.random() * 7 + 5) + 's';
+                snow.style.opacity = Math.random() * 0.6 + 0.4;
+                document.body.appendChild(snow);
+                
+                setTimeout(() => snow.remove(), 12000);
+            }, 300);
+        }
+
+        // 페이지 로드 시 눈 시작
+        window.addEventListener('load', () => {
+            console.log('페이지 로드됨, 눈 시작');
+            startSnowfall();
+        });
+
+        function startGame() {
+            document.body.classList.remove('start-screen');
+            document.body.classList.add('cursor-glove');
+            document.getElementById('bgm').play();
+            document.getElementById('leftMenu').style.display = 'flex';
+            
+            console.log('게임 시작');
+            
+            showScreen('selectTierScreen');
+        }
+
+        // 모든 클릭에 소리 추가
+        document.addEventListener('mousedown', (e) => {
+            playClick();
+        });
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        document.body.addEventListener('mousedown', () => {
+            if (document.body.classList.contains('cursor-glove')) {
+                document.body.classList.add('cursor-glove-click');
+            }
+        });
+
+        document.body.addEventListener('mouseup', () => {
+            document.body.classList.remove('cursor-glove-click');
+        });
+
+        function selectTier(tier) {
+            gameState.tier = tier;
+            gameState.snowballs = [];
+            gameState.currentSnowballIndex = 0;
+            document.getElementById('snowballStorage').style.display = 'block';
+            showScreen('rollScreen');
+            startRolling();
+        }
+
+        function startRolling() {
+            gameState.currentSize = 50;
+            const snowballNum = Math.floor(Math.random() * 4) + 1;
+            const snowball = document.getElementById('currentSnowball');
+            snowball.src = `눈덩이${snowballNum}.png`;
+            snowball.style.width = gameState.currentSize + 'px';
+            snowball.style.transform = 'rotate(0deg)';
+
+            const taskTexts = gameState.tier === 2 
+                ? ['몸통을 만들어보자!', '머리를 만들어보자!']
+                : ['몸통을 만들어보자!', '몸통2를 만들어보자!', '머리를 만들어보자!'];
+            document.getElementById('rollTaskText').textContent = taskTexts[gameState.currentSnowballIndex];
+
+            let rotation = 0;
+            let isGrowing = false;
+
+            snowball.onmousemove = function() {
+                if (gameState.currentSize < 300) {
+                    if (!isGrowing) {
+                        playRollSound();
+                        isGrowing = true;
+                    }
+                    gameState.currentSize += 0.5;
+                    rotation += 6;
+                    snowball.style.width = gameState.currentSize + 'px';
+                    snowball.style.transform = `rotate(${rotation}deg) translateX(${Math.sin(rotation/10)*5}px)`;
+                }
+            };
+
+            snowball.onmouseleave = function() {
+                if (isGrowing) {
+                    stopRollSound();
+                    isGrowing = false;
+                }
+            };
+        }
+
+        function nextSnowball() {
+            stopRollSound();
+            
+            const snowball = document.getElementById('currentSnowball');
+            gameState.snowballs.push({
+                src: snowball.src,
+                size: gameState.currentSize
+            });
+
+            // 라벨 텍스트
+            const labels = gameState.tier === 2 
+                ? ['몸통', '머리']
+                : ['몸통', '몸통2', '머리'];
+            const label = labels[gameState.currentSnowballIndex];
+
+            // 왼쪽 메뉴에 저장된 눈덩이 표시
+            const storage = document.getElementById('storedSnowballs');
+            const stored = document.createElement('div');
+            stored.className = 'stored-snowball';
+            stored.dataset.index = gameState.snowballs.length - 1;
+            stored.innerHTML = `
+                <div class="snowball-label">${label}</div>
+                <img src="${snowball.src}" style="width: ${gameState.currentSize}px" alt="snowball">
+            `;
+            
+            storage.appendChild(stored);
+            
+            console.log('눈덩이 저장됨:', label, stored);
+
+            gameState.currentSnowballIndex++;
+            if (gameState.currentSnowballIndex < gameState.tier) {
+                startRolling();
+            } else {
+                // 모든 눈덩이 저장 완료 후 조립 단계로
+                console.log('모든 눈덩이 저장 완료, 조립 단계로 이동');
+                showScreen('assemblyScreen');
+                setupAssembly();
+            }
+        }
+
+        let draggedElement = null;
+        let dragStartX = 0;
+        let dragStartY = 0;
+        let isDraggingFromMenu = false;
+        let draggedClone = null;
+
+        function handleDragStart(e) {
+            draggedElement = e.target.closest('.stored-snowball');
+            if (!draggedElement) return;
+            
+            isDraggingFromMenu = true;
+            const rect = draggedElement.getBoundingClientRect();
+            dragStartX = e.clientX - rect.left;
+            dragStartY = e.clientY - rect.top;
+            
+            // 드래그 클론 생성
+            draggedClone = draggedElement.cloneNode(true);
+            draggedClone.style.position = 'fixed';
+            draggedClone.style.pointerEvents = 'none';
+            draggedClone.style.zIndex = '10000';
+            draggedClone.style.opacity = '0.8';
+            draggedClone.style.width = draggedElement.offsetWidth + 'px';
+            draggedClone.style.left = (e.clientX - dragStartX) + 'px';
+            draggedClone.style.top = (e.clientY - dragStartY) + 'px';
+            document.body.appendChild(draggedClone);
+            
+            // 원본 숨김
+            draggedElement.style.visibility = 'hidden';
+            
+            e.preventDefault();
+        }
+
+        // 전역 마우스 이벤트
+        document.addEventListener('mousemove', (e) => {
+            if (isDraggingFromMenu && draggedClone) {
+                draggedClone.style.left = (e.clientX - dragStartX) + 'px';
+                draggedClone.style.top = (e.clientY - dragStartY) + 'px';
+            }
+        });
+
+        document.addEventListener('mouseup', (e) => {
+            if (isDraggingFromMenu && draggedElement) {
+                // 드롭 위치 확인
+                const assemblyArea = document.getElementById('assemblyArea');
+                const areaRect = assemblyArea.getBoundingClientRect();
+                
+                if (e.clientX >= areaRect.left && e.clientX <= areaRect.right &&
+                    e.clientY >= areaRect.top && e.clientY <= areaRect.bottom) {
+                    
+                    // 작업 영역에 드롭됨
+                    const index = draggedElement.dataset.index;
+                    const ball = gameState.snowballs[index];
+                    
+                    // 새 눈덩이 생성
+                    const img = document.createElement('img');
+                    img.src = ball.src;
+                    img.className = 'draggable-snowball';
+                    img.style.width = ball.size + 'px';
+                    img.style.position = 'absolute';
+                    img.style.left = (e.clientX - areaRect.left - dragStartX) + 'px';
+                    img.style.top = (e.clientY - areaRect.top - dragStartY) + 'px';
+                    img.dataset.index = index;
+                    
+                    // 작업 영역에 추가
+                    assemblyArea.appendChild(img);
+                    
+                    // 드래그 기능 추가
+                    makeSnowballDraggable(img, assemblyArea);
+                    
+                    // 메뉴에서 제거
+                    draggedElement.remove();
+                } else {
+                    // 작업 영역 밖에 드롭 - 원본 복원
+                    draggedElement.style.visibility = 'visible';
+                }
+                
+                // 클론 제거
+                if (draggedClone) {
+                    draggedClone.remove();
+                    draggedClone = null;
+                }
+                
+                isDraggingFromMenu = false;
+                draggedElement = null;
+            }
+        });
+
+        function makeSnowballDraggable(img, area) {
+            let isDragging = false;
+            let offsetX, offsetY;
+
+            img.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                const imgRect = img.getBoundingClientRect();
+                offsetX = e.clientX - imgRect.left;
+                offsetY = e.clientY - imgRect.top;
+                img.style.cursor = 'grabbing';
+                img.style.zIndex = '1000';
+                e.preventDefault();
+                e.stopPropagation();
+            });
+
+            const mouseMoveHandler = (e) => {
+                if (isDragging && img.parentElement) {
+                    const areaRect = area.getBoundingClientRect();
+                    const newLeft = e.clientX - areaRect.left - offsetX;
+                    const newTop = e.clientY - areaRect.top - offsetY;
+                    
+                    // 메뉴 영역 침범 방지
+                    const minLeft = Math.max(0, -areaRect.left + 420);
+                    img.style.left = Math.max(minLeft, newLeft) + 'px';
+                    img.style.top = newTop + 'px';
+                }
+            };
+
+            const mouseUpHandler = () => {
+                if (isDragging) {
+                    isDragging = false;
+                    img.style.cursor = 'move';
+                    img.style.zIndex = '10';
+                }
+            };
+
+            document.addEventListener('mousemove', mouseMoveHandler);
+            document.addEventListener('mouseup', mouseUpHandler);
+        }
+
+        function setupAssembly() {
+            const guideline = document.getElementById('guideline');
+            const area = document.getElementById('assemblyArea');
+            
+            console.log('=== setupAssembly 시작 ===');
+            console.log('저장된 눈덩이 데이터:', gameState.snowballs);
+            
+            // 가이드라인 그리기 (위에서 아래로: 작은 것 -> 큰 것)
+            let yPos = 200;
+            const sizes = gameState.tier === 2 ? [90, 150] : [70, 110, 150];
+            
+            guideline.innerHTML = '';
+            sizes.forEach((size) => {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', 200);
+                circle.setAttribute('cy', yPos);
+                circle.setAttribute('r', size);
+                circle.style.stroke = '#ff4444';
+                circle.style.strokeWidth = '3';
+                circle.style.strokeDasharray = '10,5';
+                circle.style.fill = 'none';
+                guideline.appendChild(circle);
+                yPos += size * 1.7;
+            });
+
+            setTimeout(() => {
+                guideline.style.display = 'none';
+            }, 5000);
+
+            // 잠시 후 드래그 이벤트 등록 (DOM이 완전히 렌더링된 후)
+            setTimeout(() => {
+                const storedSnowballs = document.querySelectorAll('.stored-snowball');
+                console.log('메뉴에 있는 눈덩이 개수:', storedSnowballs.length);
+                console.log('눈덩이 elements:', storedSnowballs);
+                
+                if (storedSnowballs.length === 0) {
+                    console.error('ERROR: 메뉴에 눈덩이가 없습니다!');
+                    // 메뉴 상태 확인
+                    const storage = document.getElementById('storedSnowballs');
+                    console.log('Storage element:', storage);
+                    console.log('Storage children:', storage.children);
+                }
+                
+                storedSnowballs.forEach((snowball, index) => {
+                    console.log(`눈덩이 ${index} 드래그 이벤트 등록`, snowball.dataset.index);
+                    
+                    snowball.addEventListener('mousedown', function(e) {
+                        console.log('>>> 눈덩이 mousedown!', this.dataset.index);
+                        handleDragStart(e);
+                    });
+                });
+            }, 200); // 대기 시간 증가
+        }
+
+        // ===== 수정된 goToDecorate 함수 =====
+        function goToDecorate() {
+            const area = document.getElementById('assemblyArea');
+            const snowballs = area.querySelectorAll('.draggable-snowball');
+            
+            // 눈사람이 조립되지 않았으면 경고
+            if (snowballs.length === 0) {
+                alert('눈사람을 조립해주세요!');
+                return;
+            }
+            
+            document.body.classList.remove('cursor-glove', 'cursor-glove-click');
+            
+            const preview = document.getElementById('snowmanPreview');
+            
+            // 눈사람이 이미 있는지 확인 (눈덩이 img 태그만 카운트)
+            const existingSnowballs = Array.from(preview.children).filter(
+                child => child.tagName === 'IMG' && !child.closest('.decoration-item')
+            );
+            
+            console.log('Existing snowballs in preview:', existingSnowballs.length);
+            
+            // 눈사람이 없을 때만 복사
+            if (existingSnowballs.length === 0) {
+                // 눈덩이들의 바운딩 박스 계산
+                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                
+                snowballs.forEach(img => {
+                    const rect = img.getBoundingClientRect();
+                    minX = Math.min(minX, rect.left);
+                    minY = Math.min(minY, rect.top);
+                    maxX = Math.max(maxX, rect.right);
+                    maxY = Math.max(maxY, rect.bottom);
+                });
+                
+                // 눈사람 그룹의 중심점
+                const groupCenterX = (minX + maxX) / 2;
+                const groupCenterY = (minY + maxY) / 2;
+                
+                const previewRect = preview.getBoundingClientRect();
+                const previewCenterX = previewRect.width / 2;
+                const previewCenterY = previewRect.height / 2;
+                
+                console.log('Copying', snowballs.length, 'snowballs to preview');
+                console.log('Group center:', groupCenterX, groupCenterY);
+                console.log('Preview center:', previewCenterX, previewCenterY);
+                
+                snowballs.forEach((img, index) => {
+                    const clone = document.createElement('img');
+                    clone.src = img.src;
+                    clone.style.width = img.style.width;
+                    clone.style.position = 'absolute';
+                    clone.className = 'snowman-body';
+                    
+                    // 현재 위치
+                    const imgRect = img.getBoundingClientRect();
+                    const imgCenterX = imgRect.left + imgRect.width / 2;
+                    const imgCenterY = imgRect.top + imgRect.height / 2;
+                    
+                    // 그룹 중심 기준 상대 위치
+                    const relativeX = imgCenterX - groupCenterX;
+                    const relativeY = imgCenterY - groupCenterY;
+                    
+                    // preview 중앙 기준으로 재배치
+                    const newLeft = previewCenterX + relativeX - imgRect.width / 2;
+                    const newTop = previewCenterY + relativeY - imgRect.height / 2;
+                    
+                    clone.style.left = newLeft + 'px';
+                    clone.style.top = newTop + 'px';
+                    clone.style.filter = 'drop-shadow(3px 3px 8px rgba(0,0,0,0.3))';
+                    clone.style.zIndex = '10';
+                    
+                    console.log(`Snowball ${index}: left=${clone.style.left}, top=${clone.style.top}, width=${clone.style.width}`);
+                    
+                    preview.appendChild(clone);
+                });
+                
+                console.log('Preview children after copy:', preview.children.length);
+            } else {
+                console.log('Snowman already exists in preview, skipping copy');
+            }
+
+            // 메뉴에서 눈덩이 제거
+            document.getElementById('storedSnowballs').innerHTML = '';
+            document.getElementById('snowballStorage').style.display = 'none';
+
+            document.getElementById('decorateMenu').style.display = 'block';
+            showScreen('decorateScreen');
+        }
+
+        function closeAndReturnToDecorate() {
+            showScreen('decorateScreen');
+        }
+        
+        function closeGalleryOverlay() {
+            document.getElementById('galleryOverlay').style.display = 'none';
+        }
+
+        function selectCategory(category, count) {
+            currentCategory = category;
+            currentCategoryCount = count;
+            currentItemPage = 0;
+            
+            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            displayItems();
+        }
+
+        function displayItems() {
+            const container = document.getElementById('itemsScroll');
+            container.innerHTML = '';
+            
+            const start = currentItemPage * 5;
+            const end = Math.min(start + 5, currentCategoryCount);
+            
+            for (let i = start; i < end; i++) {
+                const img = document.createElement('img');
+                img.src = `${currentCategory}${i + 1}.png`;
+                img.className = 'item-img';
+                img.onclick = () => addDecoration(img.src);
+                container.appendChild(img);
+            }
+        }
+
+        function scrollItems(direction) {
+            const maxPage = Math.ceil(currentCategoryCount / 5) - 1;
+            currentItemPage = Math.max(0, Math.min(maxPage, currentItemPage + direction));
+            displayItems();
+        }
+
+        function addDecoration(src) {
+            const preview = document.getElementById('snowmanPreview');
+            const wrapper = document.createElement('div');
+            wrapper.className = 'decoration-item';
+            wrapper.style.left = '50%';
+            wrapper.style.top = '50%';
+            wrapper.style.transform = 'translate(-50%, -50%)';
+            wrapper.style.position = 'absolute';
+            wrapper.dataset.id = decorationCounter++;
+            
+            const img = document.createElement('img');
+            img.src = src;
+            
+            // 특정 이미지들은 작게 시작
+            const filename = src.split('/').pop();
+            if (filename.match(/^눈썹[1-6]\.png$/) || filename === '코3.png') {
+                img.style.width = '33px';  // 50px의 2/3
+            } else {
+                img.style.width = '100px';
+            }
+            
+            img.style.display = 'block';
+            
+            const controls = document.createElement('div');
+            controls.className = 'item-controls';
+            controls.innerHTML = `
+                <button class="control-btn" onclick="resizeDecoration(${wrapper.dataset.id}, -10); event.stopPropagation();">-</button>
+                <button class="control-btn" onclick="resizeDecoration(${wrapper.dataset.id}, 10); event.stopPropagation();">+</button>
+                <button class="control-btn" onclick="removeDecoration(${wrapper.dataset.id}); event.stopPropagation();">✕</button>
+            `;
+            
+            wrapper.appendChild(img);
+            wrapper.appendChild(controls);
+            preview.appendChild(wrapper);
+            
+            // 드래그 기능
+            let isDragging = false;
+            let offsetX, offsetY;
+
+            wrapper.addEventListener('mousedown', function(e) {
+                if (e.target.classList.contains('control-btn')) return;
+                
+                isDragging = true;
+                const rect = wrapper.getBoundingClientRect();
+                const previewRect = preview.getBoundingClientRect();
+                offsetX = e.clientX - rect.left;
+                offsetY = e.clientY - rect.top;
+                
+                // 선택 상태
+                document.querySelectorAll('.decoration-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
+                wrapper.classList.add('selected');
+                
+                e.preventDefault();
+                e.stopPropagation();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging && wrapper.parentElement) {
+                    const previewRect = preview.getBoundingClientRect();
+                    wrapper.style.left = (e.clientX - previewRect.left - offsetX) + 'px';
+                    wrapper.style.top = (e.clientY - previewRect.top - offsetY) + 'px';
+                    wrapper.style.transform = 'none';
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+
+            // 클릭으로 선택
+            wrapper.addEventListener('click', function(e) {
+                e.stopPropagation();
+                document.querySelectorAll('.decoration-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
+                wrapper.classList.add('selected');
+            });
+        }
+
+        // 다른 곳 클릭 시 선택 해제
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.decoration-item') && !e.target.closest('.control-btn')) {
+                document.querySelectorAll('.decoration-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
+            }
+        });
+
+        function resizeDecoration(id, delta) {
+            const item = document.querySelector(`.decoration-item[data-id="${id}"] img`);
+            const currentWidth = item.offsetWidth;
+            item.style.width = Math.max(20, Math.min(300, currentWidth + delta)) + 'px';
+        }
+
+        function removeDecoration(id) {
+            const item = document.querySelector(`.decoration-item[data-id="${id}"]`);
+            item.remove();
+        }
+
+        async function finishDecorate() {
+            const preview = document.getElementById('snowmanPreview');
+            
+            console.log('=== 캡처 시작 ===');
+            console.log('Preview children:', preview.children.length);
+            
+            // 각 자식 요소 로깅
+            Array.from(preview.children).forEach((child, i) => {
+                console.log(`Child ${i}:`, child.tagName, child.className, child.src || 'no src');
+            });
+            
+            if (preview.children.length === 0) {
+                alert('눈사람을 먼저 만들어주세요!');
+                return;
+            }
+            
+            // 모든 장식 아이템의 컨트롤 버튼 임시 제거
+            const items = preview.querySelectorAll('.decoration-item');
+            const removedControls = [];
+            
+            items.forEach(item => {
+                item.classList.remove('selected');
+                const controls = item.querySelector('.item-controls');
+                if (controls) {
+                    removedControls.push({
+                        parent: item,
+                        controls: controls.cloneNode(true)
+                    });
+                    controls.remove();
+                }
+            });
+            
+            // html2canvas 체크
+            if (typeof html2canvas === 'undefined') {
+                alert('이미지 라이브러리를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+                removedControls.forEach(({parent, controls}) => parent.appendChild(controls));
+                return;
+            }
+
+            // 이미지 로드 대기
+            const images = preview.querySelectorAll('img');
+            const imagePromises = Array.from(images).map(img => {
+                if (img.complete) return Promise.resolve();
+                return new Promise((resolve, reject) => {
+                    img.onload = resolve;
+                    img.onerror = reject;
+                    setTimeout(reject, 5000); // 5초 타임아웃
+                });
+            });
+            
+            try {
+                await Promise.all(imagePromises);
+                console.log('All images loaded');
+            } catch (e) {
+                console.warn('Some images failed to load:', e);
+            }
+
+            // 추가 대기
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            try {
+                console.log('Starting html2canvas...');
+                console.log('Preview rect:', preview.getBoundingClientRect());
+                
+                // 캡처
+                const canvas = await html2canvas(preview, {
+                    backgroundColor: null,
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    logging: true,
+                    x: 0,
+                    y: 0,
+                    width: preview.offsetWidth,
+                    height: preview.offsetHeight,
+                    scrollX: 0,
+                    scrollY: 0,
+                    windowWidth: preview.offsetWidth,
+                    windowHeight: preview.offsetHeight
+                });
+                
+                console.log('Canvas created:', canvas.width, 'x', canvas.height);
+                
+                const imageData = canvas.toDataURL('image/png');
+                console.log('Image data created, length:', imageData.length);
+                
+                if (imageData.length < 1000) {
+                    throw new Error('이미지 데이터가 너무 작습니다');
+                }
+                
+                gameState.capturedImageData = imageData;
+                
+                // 이미지 설정
+                const capturedImg = document.getElementById('capturedImage');
+                capturedImg.src = imageData;
+                
+                console.log('=== 캡처 완료 ===');
+                
+                // 컨트롤 버튼 복원
+                removedControls.forEach(({parent, controls}) => {
+                    parent.appendChild(controls);
+                });
+                
+                showScreen('saveScreen');
+            } catch (error) {
+                console.error('캡처 오류:', error);
+                alert('이미지 캡처에 실패했습니다: ' + error.message);
+                
+                // 컨트롤 버튼 복원
+                removedControls.forEach(({parent, controls}) => {
+                    parent.appendChild(controls);
+                });
+            }
+        }
+
+        async function saveSnowman() {
+            const name = document.getElementById('snowmanName').value || '이름없는 눈사람';
+            const message = document.getElementById('snowmanMessage').value || '';
+            const imageData = document.getElementById('capturedImage').src;
+            
+            if (!imageData || imageData === '') {
+                alert('이미지가 없습니다. 다시 시도해주세요.');
+                return;
+            }
+
+            // 저장 버튼 비활성화 및 텍스트 변경
+            const saveBtn = event.target;
+            const originalText = saveBtn.textContent;
+            saveBtn.textContent = '저장중...';
+            saveBtn.disabled = true;
+            saveBtn.style.opacity = '0.6';
+            saveBtn.style.cursor = 'not-allowed';
+
+            try {
+                const formData = new FormData();
+                formData.append('action', 'create');
+                formData.append('image', imageData);
+                formData.append('name', name);
+                formData.append('message', message);
+                formData.append('timestamp', new Date().toLocaleString('ko-KR'));
+                
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: formData,
+                    mode: 'no-cors'
+                });
+                
+                // no-cors 모드에서는 응답을 읽을 수 없으므로 성공으로 간주
+                showScreen('completedScreen');
+            } catch (error) {
+                console.error('저장 오류:', error);
+                // 에러가 발생해도 완료 화면으로 이동 (Google Apps Script는 CORS 이슈가 있을 수 있음)
+                showScreen('completedScreen');
+            } finally {
+                // 버튼 복원
+                saveBtn.textContent = originalText;
+                saveBtn.disabled = false;
+                saveBtn.style.opacity = '1';
+                saveBtn.style.cursor = 'pointer';
+            }
+        }
+
+        function showGalleryOverlay() {
+            document.getElementById('galleryOverlay').style.display = 'flex';
+            loadGallery();
+        }
+
+        function closeGalleryOverlay() {
+            document.getElementById('galleryOverlay').style.display = 'none';
+        }
+
+        async function loadGallery() {
+            try {
+                const response = await fetch(WEB_APP_URL + '?action=read', {
+                    method: 'GET'
+                });
+                
+                const text = await response.text();
+                console.log('Response:', text);
+                
+                const result = JSON.parse(text);
+                
+                const gallery = document.getElementById('gallery');
+                gallery.innerHTML = '';
+                
+                if (result.status === 'success' && result.data.rows && result.data.rows.length > 0) {
+                    const headers = result.data.headers;
+                    const imageIdx = headers.indexOf('image');
+                    const nameIdx = headers.indexOf('name');
+                    const messageIdx = headers.indexOf('message');
+                    
+                    result.data.rows.forEach((row) => {
+                        const item = document.createElement('div');
+                        item.className = 'gallery-item';
+                        item.onclick = () => showModal(row[imageIdx], row[nameIdx], row[messageIdx]);
+                        
+                        const img = document.createElement('img');
+                        img.src = row[imageIdx];
+                        item.appendChild(img);
+                        gallery.appendChild(item);
+                    });
+                } else {
+                    gallery.innerHTML = '<div class="loading">아직 저장된 눈사람이 없어요!</div>';
+                }
+            } catch (error) {
+                console.error('Gallery load error:', error);
+                document.getElementById('gallery').innerHTML = '<div class="loading">데이터를 불러오는데 실패했습니다.</div>';
+            }
+        }
+
+        function showModal(image, name, message) {
+            document.getElementById('modalImage').src = image;
+            document.getElementById('modalName').textContent = name;
+            document.getElementById('modalMessage').textContent = message;
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+    </script>
+</body>
+</html>
