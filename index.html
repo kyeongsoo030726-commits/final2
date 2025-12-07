@@ -644,14 +644,14 @@
             align-self: flex-end;
         }
 
-        /* DB 화면 */
+        /* DB 화면 - 수정3: 검은 배경 제거 */
         .gallery-overlay {
             position: absolute;
             left: 420px;
             top: 0;
             width: calc(100% - 420px);
             height: 100%;
-            background: rgba(0,0,0,0); /* 검은 배경 제거 */
+            background: rgba(0,0,0,0);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -744,6 +744,7 @@
             display: flex;
         }
 
+        /* 수정6: 모달 헤더 추가 */
         .modal-content {
             background: white;
             border-radius: 20px;
@@ -855,6 +856,7 @@
     </style>
 </head>
 <body class="start-screen">
+    <!-- 수정4: preload 추가 -->
     <audio id="bgm" loop preload="auto">
         <source src="배경음악.mp3" type="audio/mpeg">
     </audio>
@@ -1009,6 +1011,7 @@
         </div>
     </div>
 
+    <!-- 수정6: 모달 HTML 구조 변경 -->
     <div class="modal" id="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1042,7 +1045,7 @@ const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwrO7dz2Kzmd-wp-Rkh
         let currentItemPage = 0;
         let decorationCounter = 0;
 
-        // 오디오 풀 생성 (여러 클릭음 동시 재생 가능)
+        // 수정4: 오디오 풀 생성
         const clickSoundPool = [];
         const POOL_SIZE = 5;
         
@@ -1079,13 +1082,13 @@ const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwrO7dz2Kzmd-wp-Rkh
             document.getElementById('rollSound').currentTime = 0;
         }
 
-        // 눈 내리기 시작 - 메뉴 영역 제외, 크기 증가
+        // 수정1,2: 눈 내리기 - 크기 증가 및 메뉴 영역 제외
         function startSnowfall() {
             setInterval(() => {
                 const snow = document.createElement('div');
                 snow.className = 'snowflake';
                 // 왼쪽 메뉴 영역(420px)을 제외한 위치에만 눈송이 생성
-                snow.style.left = (Math.random() * (100 - 27.5) + 27.5) + '%'; // 420px/1520px ≈ 27.5%
+                snow.style.left = (Math.random() * (100 - 27.5) + 27.5) + '%';
                 snow.style.width = (Math.random() * 7 + 5) + 'px'; // 5-12px로 크기 증가
                 snow.style.height = snow.style.width;
                 snow.style.animationDuration = (Math.random() * 7 + 5) + 's';
@@ -1100,7 +1103,7 @@ const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwrO7dz2Kzmd-wp-Rkh
         window.addEventListener('load', () => {
             console.log('페이지 로드됨, 눈 시작');
             startSnowfall();
-            initClickSoundPool(); // 클릭 사운드 풀 초기화
+            initClickSoundPool();
         });
 
         function startGame() {
@@ -1114,7 +1117,6 @@ const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwrO7dz2Kzmd-wp-Rkh
             showScreen('selectTierScreen');
         }
 
-        // 모든 클릭에 소리 추가
         document.addEventListener('mousedown', (e) => {
             playClick();
         });
@@ -1380,6 +1382,7 @@ const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwrO7dz2Kzmd-wp-Rkh
             }, 200);
         }
 
+        // 원본 goToDecorate 함수 유지 (수정 안 함)
         function goToDecorate() {
             const assemblyArea = document.getElementById('assemblyArea');
             const preview = document.getElementById('snowmanPreview');
@@ -1650,6 +1653,7 @@ const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwrO7dz2Kzmd-wp-Rkh
             }
         }
 
+        // 수정5: 저장 버튼에 '저장중...' 표시
         async function saveSnowman() {
             const name = document.getElementById('snowmanName').value || '이름없는 눈사람';
             const message = document.getElementById('snowmanMessage').value || '';
@@ -1660,7 +1664,6 @@ const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwrO7dz2Kzmd-wp-Rkh
                 return;
             }
 
-            // 저장 버튼 비활성화 및 텍스트 변경
             const saveBtn = event.target;
             const originalText = saveBtn.textContent;
             saveBtn.textContent = '저장중...';
