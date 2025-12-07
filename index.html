@@ -257,10 +257,7 @@
             margin-left: 420px;
             width: calc(100% - 420px);
             height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            display: block;
             position: relative;
         }
 
@@ -289,6 +286,11 @@
         }
 
         /* 질문 화면 */
+        #selectTierScreen {
+             align-items: center;
+             justify-content: center;
+        }
+        
         .question-content {
             display: flex;
             flex-direction: column;
@@ -296,7 +298,7 @@
             gap: 2rem;
             padding: 3rem;
             border-radius: 30px;
-            margin-top: -5rem;
+            margin-top: 30vh;
         }
 
         .question {
@@ -390,12 +392,12 @@
 
         /* 눈사람 합치기 */
         .assembly-area {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: absolute;
+            width: 500px;
+            height: 550px;
+            left: 50%;
+            top: 55%;
+            transform: translate(-50%, -50%);
         }
 
         .guideline {
@@ -431,11 +433,12 @@
         }
 
         .snowman-preview {
-            flex: 1;
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            position: absolute;
+            width: 500px;
+            height: 550px;
+            left: 50%;
+            top: 55%;
+            transform: translate(-50%, -50%);
         }
 
         .category-buttons {
@@ -648,7 +651,7 @@
             top: 0;
             width: calc(100% - 420px);
             height: 100%;
-            background: rgba(0,0,0,0); /* 검은 반투명 배경 제거 */
+            background: rgba(0,0,0,0); /* 검은 배경 제거 */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -747,7 +750,7 @@
             max-width: 600px;
             position: relative;
             overflow: hidden;
-            padding: 0; /* 패딩 제거 */
+            padding: 0;
         }
 
         .modal-header {
@@ -852,23 +855,21 @@
     </style>
 </head>
 <body class="start-screen">
-    <audio id="bgm" loop>
+    <audio id="bgm" loop preload="auto">
         <source src="배경음악.mp3" type="audio/mpeg">
     </audio>
-    <audio id="clickSound">
+    <audio id="clickSound" preload="auto">
         <source src="click.mp3" type="audio/mpeg">
     </audio>
-    <audio id="rollSound" loop>
+    <audio id="rollSound" loop preload="auto">
         <source src="휙.wav" type="audio/wav">
     </audio>
 
-    <!-- 시작 화면 -->
     <div class="screen active" id="startScreen">
         <button class="start-choice" onclick="playClick(); setTimeout(startGame, 100);">〉 Yes!</button>
         <button class="start-choice" onclick="playClick(); setTimeout(showGalleryOverlay, 100);">〉 No! (눈사람 구경하기)</button>
     </div>
 
-    <!-- 왼쪽 메뉴 -->
     <div class="left-menu" id="leftMenu" style="display: none;">
         <div class="menu-title">
             Do You Want<br>
@@ -905,7 +906,6 @@
         </div>
     </div>
 
-    <!-- 1. 눈사람 단 고르기 -->
     <div class="screen" id="selectTierScreen">
         <div class="game-area">
             <div class="question-content">
@@ -918,7 +918,6 @@
         </div>
     </div>
 
-    <!-- 2. 눈덩이 굴리기 -->
     <div class="screen" id="rollScreen">
         <div class="game-area">
             <div class="guide-section">
@@ -932,7 +931,6 @@
         </div>
     </div>
 
-    <!-- 3. 눈사람 합치기 -->
     <div class="screen" id="assemblyScreen">
         <div class="game-area">
             <div class="guide-section">
@@ -947,7 +945,6 @@
         </div>
     </div>
 
-    <!-- 4. 눈사람 꾸미기 -->
     <div class="screen" id="decorateScreen">
         <div class="game-area">
             <div class="guide-section">
@@ -960,7 +957,6 @@
         </div>
     </div>
 
-    <!-- 5. 이름과 메시지 입력 -->
     <div class="screen" id="saveScreen">
         <div class="center-content">
             <div>
@@ -986,7 +982,6 @@
         </div>
     </div>
 
-    <!-- 저장 완료 화면 -->
     <div class="screen" id="completedScreen">
         <div class="center-content">
             <div>
@@ -1002,7 +997,6 @@
         </div>
     </div>
 
-    <!-- 갤러리 오버레이 -->
     <div class="gallery-overlay" id="galleryOverlay" style="display: none;">
         <div class="gallery-container">
             <div class="gallery-header">
@@ -1015,7 +1009,6 @@
         </div>
     </div>
 
-    <!-- 모달 -->
     <div class="modal" id="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1034,8 +1027,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwxOeA4K-SgKn4BZEwjFYTXMLjUTCXbjFx3yUlLH7bEwP6lKfqq6agbFsUsl3_EtXvA/exec';
-        
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwrO7dz2Kzmd-wp-Rkh-a2YwXrt31-11xQH_5O8FpruSZWWVr7oRP2P42GQ5dsUs8Ie/exec';        
         let gameState = {
             tier: 0,
             snowballs: [],
@@ -1050,14 +1042,28 @@
         let currentItemPage = 0;
         let decorationCounter = 0;
 
-        // 오디오 함수들 먼저 정의
+        // 오디오 풀 생성 (여러 클릭음 동시 재생 가능)
+        const clickSoundPool = [];
+        const POOL_SIZE = 5;
+        
+        function initClickSoundPool() {
+            for (let i = 0; i < POOL_SIZE; i++) {
+                const audio = new Audio('click.mp3');
+                audio.volume = 0.3;
+                audio.preload = 'auto';
+                clickSoundPool.push(audio);
+            }
+        }
+        
+        let currentSoundIndex = 0;
+        
         function playClick() {
             try {
-                const sound = document.getElementById('clickSound');
-                if (sound) {
-                    const audio = new Audio(sound.src);
-                    audio.volume = 0.3;
+                const audio = clickSoundPool[currentSoundIndex];
+                if (audio) {
+                    audio.currentTime = 0;
                     audio.play().catch(e => console.log('Sound play failed:', e));
+                    currentSoundIndex = (currentSoundIndex + 1) % POOL_SIZE;
                 }
             } catch (e) {
                 console.log('Sound error:', e);
@@ -1073,14 +1079,14 @@
             document.getElementById('rollSound').currentTime = 0;
         }
 
-        // 눈 내리기 시작
+        // 눈 내리기 시작 - 메뉴 영역 제외, 크기 증가
         function startSnowfall() {
             setInterval(() => {
                 const snow = document.createElement('div');
                 snow.className = 'snowflake';
                 // 왼쪽 메뉴 영역(420px)을 제외한 위치에만 눈송이 생성
                 snow.style.left = (Math.random() * (100 - 27.5) + 27.5) + '%'; // 420px/1520px ≈ 27.5%
-                snow.style.width = (Math.random() * 7 + 5) + 'px'; // 5-12px로 증가
+                snow.style.width = (Math.random() * 7 + 5) + 'px'; // 5-12px로 크기 증가
                 snow.style.height = snow.style.width;
                 snow.style.animationDuration = (Math.random() * 7 + 5) + 's';
                 snow.style.opacity = Math.random() * 0.6 + 0.4;
@@ -1090,10 +1096,11 @@
             }, 300);
         }
 
-        // 페이지 로드 시 눈 시작
+        // 페이지 로드 시 눈 시작 및 오디오 풀 초기화
         window.addEventListener('load', () => {
             console.log('페이지 로드됨, 눈 시작');
             startSnowfall();
+            initClickSoundPool(); // 클릭 사운드 풀 초기화
         });
 
         function startGame() {
@@ -1182,13 +1189,11 @@
                 size: gameState.currentSize
             });
 
-            // 라벨 텍스트
             const labels = gameState.tier === 2 
                 ? ['몸통', '머리']
                 : ['몸통', '몸통2', '머리'];
             const label = labels[gameState.currentSnowballIndex];
 
-            // 왼쪽 메뉴에 저장된 눈덩이 표시
             const storage = document.getElementById('storedSnowballs');
             const stored = document.createElement('div');
             stored.className = 'stored-snowball';
@@ -1206,7 +1211,6 @@
             if (gameState.currentSnowballIndex < gameState.tier) {
                 startRolling();
             } else {
-                // 모든 눈덩이 저장 완료 후 조립 단계로
                 console.log('모든 눈덩이 저장 완료, 조립 단계로 이동');
                 showScreen('assemblyScreen');
                 setupAssembly();
@@ -1228,7 +1232,6 @@
             dragStartX = e.clientX - rect.left;
             dragStartY = e.clientY - rect.top;
             
-            // 드래그 클론 생성
             draggedClone = draggedElement.cloneNode(true);
             draggedClone.style.position = 'fixed';
             draggedClone.style.pointerEvents = 'none';
@@ -1239,13 +1242,11 @@
             draggedClone.style.top = (e.clientY - dragStartY) + 'px';
             document.body.appendChild(draggedClone);
             
-            // 원본 숨김
             draggedElement.style.visibility = 'hidden';
             
             e.preventDefault();
         }
 
-        // 전역 마우스 이벤트
         document.addEventListener('mousemove', (e) => {
             if (isDraggingFromMenu && draggedClone) {
                 draggedClone.style.left = (e.clientX - dragStartX) + 'px';
@@ -1255,41 +1256,40 @@
 
         document.addEventListener('mouseup', (e) => {
             if (isDraggingFromMenu && draggedElement) {
-                // 드롭 위치 확인
                 const assemblyArea = document.getElementById('assemblyArea');
                 const areaRect = assemblyArea.getBoundingClientRect();
                 
-                if (e.clientX >= areaRect.left && e.clientX <= areaRect.right &&
-                    e.clientY >= areaRect.top && e.clientY <= areaRect.bottom) {
+                const gameAreaRect = document.querySelector('#assemblyScreen .game-area').getBoundingClientRect();
+                
+                if (e.clientX >= gameAreaRect.left && e.clientX <= gameAreaRect.right &&
+                    e.clientY >= gameAreaRect.top && e.clientY <= gameAreaRect.bottom) {
                     
-                    // 작업 영역에 드롭됨
                     const index = draggedElement.dataset.index;
                     const ball = gameState.snowballs[index];
                     
-                    // 새 눈덩이 생성
                     const img = document.createElement('img');
                     img.src = ball.src;
                     img.className = 'draggable-snowball';
                     img.style.width = ball.size + 'px';
                     img.style.position = 'absolute';
-                    img.style.left = (e.clientX - areaRect.left - dragStartX) + 'px';
-                    img.style.top = (e.clientY - areaRect.top - dragStartY) + 'px';
+                    
+                    const assemblyAreaRect = assemblyArea.getBoundingClientRect();
+                    const leftOffset = e.clientX - assemblyAreaRect.left - dragStartX;
+                    const topOffset = e.clientY - assemblyAreaRect.top - dragStartY;
+
+                    img.style.left = leftOffset + 'px';
+                    img.style.top = topOffset + 'px';
                     img.dataset.index = index;
                     
-                    // 작업 영역에 추가
                     assemblyArea.appendChild(img);
                     
-                    // 드래그 기능 추가
                     makeSnowballDraggable(img, assemblyArea);
                     
-                    // 메뉴에서 제거
                     draggedElement.remove();
                 } else {
-                    // 작업 영역 밖에 드롭 - 원본 복원
                     draggedElement.style.visibility = 'visible';
                 }
                 
-                // 클론 제거
                 if (draggedClone) {
                     draggedClone.remove();
                     draggedClone = null;
@@ -1321,8 +1321,9 @@
                     const newLeft = e.clientX - areaRect.left - offsetX;
                     const newTop = e.clientY - areaRect.top - offsetY;
                     
-                    // 메뉴 영역 침범 방지
-                    const minLeft = Math.max(0, -areaRect.left + 420);
+                    const gameArea = document.querySelector('#assemblyScreen .game-area');
+                    const minLeft = 0;
+                    
                     img.style.left = Math.max(minLeft, newLeft) + 'px';
                     img.style.top = newTop + 'px';
                 }
@@ -1342,16 +1343,16 @@
 
         function setupAssembly() {
             const guideline = document.getElementById('guideline');
-            const area = document.getElementById('assemblyArea');
             
-            console.log('=== setupAssembly 시작 ===');
-            console.log('저장된 눈덩이 데이터:', gameState.snowballs);
-            
-            // 가이드라인 그리기 (위에서 아래로: 작은 것 -> 큰 것)
             let yPos = 200;
             const sizes = gameState.tier === 2 ? [90, 150] : [70, 110, 150];
             
             guideline.innerHTML = '';
+            guideline.setAttribute('width', 400);
+            guideline.setAttribute('height', 550);
+            guideline.style.left = '50px';
+            guideline.style.top = '0'; 
+
             sizes.forEach((size) => {
                 const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                 circle.setAttribute('cx', 200);
@@ -1369,121 +1370,53 @@
                 guideline.style.display = 'none';
             }, 5000);
 
-            // 잠시 후 드래그 이벤트 등록 (DOM이 완전히 렌더링된 후)
             setTimeout(() => {
                 const storedSnowballs = document.querySelectorAll('.stored-snowball');
-                console.log('메뉴에 있는 눈덩이 개수:', storedSnowballs.length);
-                console.log('눈덩이 elements:', storedSnowballs);
-                
-                if (storedSnowballs.length === 0) {
-                    console.error('ERROR: 메뉴에 눈덩이가 없습니다!');
-                    // 메뉴 상태 확인
-                    const storage = document.getElementById('storedSnowballs');
-                    console.log('Storage element:', storage);
-                    console.log('Storage children:', storage.children);
-                }
-                
-                storedSnowballs.forEach((snowball, index) => {
-                    console.log(`눈덩이 ${index} 드래그 이벤트 등록`, snowball.dataset.index);
-                    
+                storedSnowballs.forEach((snowball) => {
                     snowball.addEventListener('mousedown', function(e) {
-                        console.log('>>> 눈덩이 mousedown!', this.dataset.index);
                         handleDragStart(e);
                     });
                 });
-            }, 200); // 대기 시간 증가
+            }, 200);
         }
 
-        // ===== 수정된 goToDecorate 함수 =====
         function goToDecorate() {
-            const area = document.getElementById('assemblyArea');
-            const snowballs = area.querySelectorAll('.draggable-snowball');
-            
-            // 눈사람이 조립되지 않았으면 경고
+            const assemblyArea = document.getElementById('assemblyArea');
+            const preview = document.getElementById('snowmanPreview');
+            const snowballs = assemblyArea.querySelectorAll('.draggable-snowball');
+
             if (snowballs.length === 0) {
                 alert('눈사람을 조립해주세요!');
                 return;
             }
-            
-            document.body.classList.remove('cursor-glove', 'cursor-glove-click');
-            
-            const preview = document.getElementById('snowmanPreview');
-            
-            // 눈사람이 이미 있는지 확인 (눈덩이 img 태그만 카운트)
-            const existingSnowballs = Array.from(preview.children).filter(
-                child => child.tagName === 'IMG' && !child.closest('.decoration-item')
-            );
-            
-            console.log('Existing snowballs in preview:', existingSnowballs.length);
-            
-            // 눈사람이 없을 때만 복사
-            if (existingSnowballs.length === 0) {
-                // 눈덩이들의 바운딩 박스 계산
-                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-                
-                snowballs.forEach(img => {
-                    const rect = img.getBoundingClientRect();
-                    minX = Math.min(minX, rect.left);
-                    minY = Math.min(minY, rect.top);
-                    maxX = Math.max(maxX, rect.right);
-                    maxY = Math.max(maxY, rect.bottom);
-                });
-                
-                // 눈사람 그룹의 중심점
-                const groupCenterX = (minX + maxX) / 2;
-                const groupCenterY = (minY + maxY) / 2;
-                
-                const previewRect = preview.getBoundingClientRect();
-                const previewCenterX = previewRect.width / 2;
-                const previewCenterY = previewRect.height / 2;
-                
-                console.log('Copying', snowballs.length, 'snowballs to preview');
-                console.log('Group center:', groupCenterX, groupCenterY);
-                console.log('Preview center:', previewCenterX, previewCenterY);
-                
-                snowballs.forEach((img, index) => {
-                    const clone = document.createElement('img');
-                    clone.src = img.src;
-                    clone.style.width = img.style.width;
-                    clone.style.position = 'absolute';
-                    clone.className = 'snowman-body';
-                    
-                    // 현재 위치
-                    const imgRect = img.getBoundingClientRect();
-                    const imgCenterX = imgRect.left + imgRect.width / 2;
-                    const imgCenterY = imgRect.top + imgRect.height / 2;
-                    
-                    // 그룹 중심 기준 상대 위치
-                    const relativeX = imgCenterX - groupCenterX;
-                    const relativeY = imgCenterY - groupCenterY;
-                    
-                    // preview 중앙 기준으로 재배치
-                    const newLeft = previewCenterX + relativeX - imgRect.width / 2;
-                    const newTop = previewCenterY + relativeY - imgRect.height / 2;
-                    
-                    clone.style.left = newLeft + 'px';
-                    clone.style.top = newTop + 'px';
-                    clone.style.filter = 'drop-shadow(3px 3px 8px rgba(0,0,0,0.3))';
-                    clone.style.zIndex = '10';
-                    
-                    console.log(`Snowball ${index}: left=${clone.style.left}, top=${clone.style.top}, width=${clone.style.width}`);
-                    
-                    preview.appendChild(clone);
-                });
-                
-                console.log('Preview children after copy:', preview.children.length);
-            } else {
-                console.log('Snowman already exists in preview, skipping copy');
-            }
 
-            // 메뉴에서 눈덩이 제거
+            preview.innerHTML = ''; 
+            document.body.classList.remove('cursor-glove', 'cursor-glove-click');
+
+            snowballs.forEach((img) => {
+                const clone = document.createElement('img');
+                clone.src = img.src;
+                clone.style.width = img.style.width;
+                clone.style.position = 'absolute';
+                clone.className = 'snowman-body';
+                clone.style.filter = 'drop-shadow(3px 3px 8px rgba(0,0,0,0.3))';
+                clone.style.zIndex = '10';
+
+                clone.style.left = img.style.left;
+                clone.style.top = img.style.top;
+
+                preview.appendChild(clone);
+            });
+
+            Array.from(snowballs).forEach(el => el.remove());
+            
             document.getElementById('storedSnowballs').innerHTML = '';
             document.getElementById('snowballStorage').style.display = 'none';
 
             document.getElementById('decorateMenu').style.display = 'block';
             showScreen('decorateScreen');
         }
-
+        
         function closeAndReturnToDecorate() {
             showScreen('decorateScreen');
         }
@@ -1529,8 +1462,10 @@
             const preview = document.getElementById('snowmanPreview');
             const wrapper = document.createElement('div');
             wrapper.className = 'decoration-item';
-            wrapper.style.left = '50%';
-            wrapper.style.top = '50%';
+            
+            const previewRect = preview.getBoundingClientRect();
+            wrapper.style.left = (previewRect.width / 2) + 'px';
+            wrapper.style.top = (previewRect.height / 2) + 'px';
             wrapper.style.transform = 'translate(-50%, -50%)';
             wrapper.style.position = 'absolute';
             wrapper.dataset.id = decorationCounter++;
@@ -1538,10 +1473,9 @@
             const img = document.createElement('img');
             img.src = src;
             
-            // 특정 이미지들은 작게 시작
             const filename = src.split('/').pop();
             if (filename.match(/^눈썹[1-6]\.png$/) || filename === '코3.png') {
-                img.style.width = '33px';  // 50px의 2/3
+                img.style.width = '33px';
             } else {
                 img.style.width = '100px';
             }
@@ -1560,7 +1494,6 @@
             wrapper.appendChild(controls);
             preview.appendChild(wrapper);
             
-            // 드래그 기능
             let isDragging = false;
             let offsetX, offsetY;
 
@@ -1569,11 +1502,9 @@
                 
                 isDragging = true;
                 const rect = wrapper.getBoundingClientRect();
-                const previewRect = preview.getBoundingClientRect();
                 offsetX = e.clientX - rect.left;
                 offsetY = e.clientY - rect.top;
                 
-                // 선택 상태
                 document.querySelectorAll('.decoration-item').forEach(item => {
                     item.classList.remove('selected');
                 });
@@ -1586,8 +1517,12 @@
             document.addEventListener('mousemove', (e) => {
                 if (isDragging && wrapper.parentElement) {
                     const previewRect = preview.getBoundingClientRect();
-                    wrapper.style.left = (e.clientX - previewRect.left - offsetX) + 'px';
-                    wrapper.style.top = (e.clientY - previewRect.top - offsetY) + 'px';
+                    
+                    let newLeft = e.clientX - previewRect.left - offsetX;
+                    let newTop = e.clientY - previewRect.top - offsetY;
+
+                    wrapper.style.left = newLeft + 'px';
+                    wrapper.style.top = newTop + 'px';
                     wrapper.style.transform = 'none';
                 }
             });
@@ -1596,7 +1531,6 @@
                 isDragging = false;
             });
 
-            // 클릭으로 선택
             wrapper.addEventListener('click', function(e) {
                 e.stopPropagation();
                 document.querySelectorAll('.decoration-item').forEach(item => {
@@ -1606,7 +1540,6 @@
             });
         }
 
-        // 다른 곳 클릭 시 선택 해제
         document.addEventListener('click', function(e) {
             if (!e.target.closest('.decoration-item') && !e.target.closest('.control-btn')) {
                 document.querySelectorAll('.decoration-item').forEach(item => {
@@ -1629,25 +1562,21 @@
         async function finishDecorate() {
             const preview = document.getElementById('snowmanPreview');
             
-            console.log('=== 캡처 시작 ===');
-            console.log('Preview children:', preview.children.length);
-            
-            // 각 자식 요소 로깅
-            Array.from(preview.children).forEach((child, i) => {
-                console.log(`Child ${i}:`, child.tagName, child.className, child.src || 'no src');
+            document.querySelectorAll('.decoration-item').forEach(item => {
+                item.classList.remove('selected');
             });
+            
+            console.log('=== 캡처 시작 ===');
             
             if (preview.children.length === 0) {
                 alert('눈사람을 먼저 만들어주세요!');
                 return;
             }
             
-            // 모든 장식 아이템의 컨트롤 버튼 임시 제거
             const items = preview.querySelectorAll('.decoration-item');
             const removedControls = [];
             
             items.forEach(item => {
-                item.classList.remove('selected');
                 const controls = item.querySelector('.item-controls');
                 if (controls) {
                     removedControls.push({
@@ -1658,59 +1587,44 @@
                 }
             });
             
-            // html2canvas 체크
             if (typeof html2canvas === 'undefined') {
-                alert('이미지 라이브러리를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
-                removedControls.forEach(({parent, controls}) => parent.appendChild(controls));
-                return;
+                 alert('이미지 라이브러리를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+                 removedControls.forEach(({parent, controls}) => parent.appendChild(controls));
+                 return;
             }
 
-            // 이미지 로드 대기
             const images = preview.querySelectorAll('img');
             const imagePromises = Array.from(images).map(img => {
                 if (img.complete) return Promise.resolve();
                 return new Promise((resolve, reject) => {
                     img.onload = resolve;
                     img.onerror = reject;
-                    setTimeout(reject, 5000); // 5초 타임아웃
+                    setTimeout(reject, 5000);
                 });
             });
             
             try {
                 await Promise.all(imagePromises);
-                console.log('All images loaded');
             } catch (e) {
                 console.warn('Some images failed to load:', e);
             }
 
-            // 추가 대기
             await new Promise(resolve => setTimeout(resolve, 500));
 
             try {
-                console.log('Starting html2canvas...');
-                console.log('Preview rect:', preview.getBoundingClientRect());
-                
-                // 캡처
                 const canvas = await html2canvas(preview, {
                     backgroundColor: null,
                     scale: 2,
-                    useCORS: true,
-                    allowTaint: true,
+                    useCORS: true, 
+                    allowTaint: true, 
                     logging: true,
                     x: 0,
                     y: 0,
                     width: preview.offsetWidth,
                     height: preview.offsetHeight,
-                    scrollX: 0,
-                    scrollY: 0,
-                    windowWidth: preview.offsetWidth,
-                    windowHeight: preview.offsetHeight
                 });
                 
-                console.log('Canvas created:', canvas.width, 'x', canvas.height);
-                
                 const imageData = canvas.toDataURL('image/png');
-                console.log('Image data created, length:', imageData.length);
                 
                 if (imageData.length < 1000) {
                     throw new Error('이미지 데이터가 너무 작습니다');
@@ -1718,13 +1632,9 @@
                 
                 gameState.capturedImageData = imageData;
                 
-                // 이미지 설정
                 const capturedImg = document.getElementById('capturedImage');
                 capturedImg.src = imageData;
                 
-                console.log('=== 캡처 완료 ===');
-                
-                // 컨트롤 버튼 복원
                 removedControls.forEach(({parent, controls}) => {
                     parent.appendChild(controls);
                 });
@@ -1732,9 +1642,8 @@
                 showScreen('saveScreen');
             } catch (error) {
                 console.error('캡처 오류:', error);
-                alert('이미지 캡처에 실패했습니다: ' + error.message);
+                alert('이미지 캡처에 실패했습니다: ' + error.message + '\n\n(참고: 외부 리소스(이미지/폰트)를 사용하면 발생할 수 있습니다. 모든 리소스를 로컬에 저장해 주세요.)');
                 
-                // 컨트롤 버튼 복원
                 removedControls.forEach(({parent, controls}) => {
                     parent.appendChild(controls);
                 });
@@ -1773,14 +1682,11 @@
                     mode: 'no-cors'
                 });
                 
-                // no-cors 모드에서는 응답을 읽을 수 없으므로 성공으로 간주
                 showScreen('completedScreen');
             } catch (error) {
                 console.error('저장 오류:', error);
-                // 에러가 발생해도 완료 화면으로 이동 (Google Apps Script는 CORS 이슈가 있을 수 있음)
                 showScreen('completedScreen');
             } finally {
-                // 버튼 복원
                 saveBtn.textContent = originalText;
                 saveBtn.disabled = false;
                 saveBtn.style.opacity = '1';
@@ -1793,47 +1699,38 @@
             loadGallery();
         }
 
-        function closeGalleryOverlay() {
-            document.getElementById('galleryOverlay').style.display = 'none';
-        }
-
-        async function loadGallery() {
-            try {
-                const response = await fetch(WEB_APP_URL + '?action=read', {
-                    method: 'GET'
-                });
-                
-                const text = await response.text();
-                console.log('Response:', text);
-                
-                const result = JSON.parse(text);
-                
-                const gallery = document.getElementById('gallery');
-                gallery.innerHTML = '';
-                
-                if (result.status === 'success' && result.data.rows && result.data.rows.length > 0) {
-                    const headers = result.data.headers;
-                    const imageIdx = headers.indexOf('image');
-                    const nameIdx = headers.indexOf('name');
-                    const messageIdx = headers.indexOf('message');
+        function loadGallery() {
+            document.getElementById('gallery').innerHTML = '<div class="loading">눈사람들을 불러오는 중...</div>';
+            fetch(WEB_APP_URL + '?action=read', { method: 'GET' })
+                .then(response => response.json())
+                .then(result => {
+                    const gallery = document.getElementById('gallery');
+                    gallery.innerHTML = '';
                     
-                    result.data.rows.forEach((row) => {
-                        const item = document.createElement('div');
-                        item.className = 'gallery-item';
-                        item.onclick = () => showModal(row[imageIdx], row[nameIdx], row[messageIdx]);
+                    if (result.status === 'success' && result.data.rows && result.data.rows.length > 0) {
+                        const headers = result.data.headers;
+                        const imageIdx = headers.indexOf('image');
+                        const nameIdx = headers.indexOf('name');
+                        const messageIdx = headers.indexOf('message');
                         
-                        const img = document.createElement('img');
-                        img.src = row[imageIdx];
-                        item.appendChild(img);
-                        gallery.appendChild(item);
-                    });
-                } else {
-                    gallery.innerHTML = '<div class="loading">아직 저장된 눈사람이 없어요!</div>';
-                }
-            } catch (error) {
-                console.error('Gallery load error:', error);
-                document.getElementById('gallery').innerHTML = '<div class="loading">데이터를 불러오는데 실패했습니다.</div>';
-            }
+                        result.data.rows.forEach((row) => {
+                            const item = document.createElement('div');
+                            item.className = 'gallery-item';
+                            item.onclick = () => showModal(row[imageIdx], row[nameIdx], row[messageIdx]);
+                            
+                            const img = document.createElement('img');
+                            img.src = row[imageIdx];
+                            item.appendChild(img);
+                            gallery.appendChild(item);
+                        });
+                    } else {
+                        gallery.innerHTML = '<div class="loading">아직 저장된 눈사람이 없어요!</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Gallery load error:', error);
+                    document.getElementById('gallery').innerHTML = '<div class="loading">데이터를 불러오는데 실패했습니다.</div>';
+                });
         }
 
         function showModal(image, name, message) {
