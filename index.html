@@ -628,8 +628,8 @@
         }
 
         textarea {
-            resize: none;
-            height: 150px;
+          flex: 1; /* 이미 있음 - 유지 */
+    resize: none;
             
         }
 
@@ -857,10 +857,12 @@
         }
         /* messageInputWrapper가 남은 수직 공간을 차지하도록 함 */
 #messageInputWrapper {
-    display: flex;
+   display: flex;
     flex-direction: column;
     flex: 1; 
     min-height: 150px;
+    /* 아래 줄 추가 */
+    height: 100%; /* 또는 max-height: 100%; */
 }
 
 /* textarea가 wrapper 안에서 남은 공간을 차지하도록 함 */
@@ -1763,6 +1765,7 @@ const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwrO7dz2Kzmd-wp-Rkh
     </script>
 </body>
 </html>
+
 
 
 
